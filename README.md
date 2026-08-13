@@ -1,67 +1,32 @@
-# OBS Solution Uploader — 解决方案代码一键上传工具
+<img width="722" height="1024" alt="image" src="https://github.com/user-attachments/assets/e5ba5b0b-967e-423c-9fec-7427d1e8a09c" /># OBS Solution Uploader — OBS 一键上传工具
 
-将 Terraform / Solution as Code 文件一键上传到华为云 OBS，自动设置公共读权限并返回公网访问 URL。
+将 Terraform / Solution as Code 文件一键上传到华为云 OBS，自动设置公共读权限并返回公网访问 URL。提高上传效率
 
 > **选择一个文件 + 选择区域 → 点击上传 → 自动完成全部操作 → 返回公共访问 URL**
 
 ---
-
-## 一、功能特性
-
-- ✅ 文件选择 + 拖拽上传（**支持多文件**）
-- ✅ **自定义目录**：首页可自由输入目录名，默认自动填充文件名
-- ✅ 区域选择，自动映射 Bucket / Region / Endpoint
-- ✅ 自动生成 Object Key：`{root}/{module}/{自定义目录}/{filename}`
-- ✅ 调用华为云 OBS 官方 SDK 上传（不自行实现签名）
-- ✅ 上传后自动设置对象 ACL 为公共读
-- ✅ 自动生成公网 URL，一键复制 / 打开
-- ✅ 重复对象提示覆盖
-- ✅ 完整日志区，敏感信息脱敏
-- ✅ 友好错误提示（认证失败 / Bucket 不存在 / 权限不足 / 网络异常 / ACL 失败）
-- ✅ 可打包为 Windows `.exe`
-- ✅ **设置面板**：凭证 / 目标路径前缀 / 区域映射表 全部前端可配置，持久化到 `user_settings.json`，默认值即当前商定值
-
----
-
-## 二、项目结构
-
+## 开始使用
+### 1.源码
+```bash
+pip install -r requirements.txt
 ```
-obs-solution-uploader/
-├── app/
-│   ├── main.py                 # 入口
-│   ├── config/
-│   │   ├── regions.py          # 区域 → Bucket/Endpoint 映射
-│   │   └── settings.py         # 固定目录、ACL、环境变量名
-│   ├── services/
-│   │   ├── obs_service.py      # OBS SDK 封装
-│   │   ├── upload_service.py   # 上传流程编排
-│   │   └── url_service.py      # 公网 URL 生成
-│   ├── ui/
-│   │   ├── main_window.py      # 主窗口
-│   │   ├── upload_widget.py    # 上传表单（含拖拽）
-│   │   ├── result_widget.py    # 结果展示
-│   │   ├── settings_dialog.py  # 设置对话框（凭证/路径/区域）
-│   │   └── worker.py           # 上传工作线程
-│   └── utils/
-│       ├── auth.py             # 凭证加载
-│       ├── file_utils.py       # 文件名解析 / Object Key 生成
-│       └── logger.py           # 安全日志
-├── tests/                      # 单元测试
-├── requirements.txt
-├── .env.example
-├── config.yaml.example
-├── .gitignore
-├── build.spec                  # PyInstaller 打包配置
-└── README.md
+### 2. 配置 OBS 凭证
+
+支持三种方式（优先级：界面输入 > 环境变量 > config.yaml）：
+
+### 3. 运行程序
+```bash
+# 在项目根目录下
+python -m app.main
 ```
 
-UI、业务逻辑、OBS SDK、区域配置、工具函数相互解耦。
+或：
 
-> `app/config/config_manager.py` 是配置中枢：凭证、路径前缀、区域映射全部由它统一加载/保存，默认值即代码内商定值。
+```bash
+python app/main.py
+```
 
----
-
-## 三、环境准备
+## 环境准备
 
 ### 1. 安装依赖
 
@@ -111,7 +76,7 @@ secret_key: "你的SK"
 
 ---
 
-## 三·五、设置面板（前端可配置）
+## 设置面板（前端可配置）
 
 点击主界面右上角 **⚙️ 设置** 打开设置对话框，可配置以下内容，保存后持久化到 `user_settings.json`（不进 Git），默认值即当前商定值：
 
@@ -143,8 +108,6 @@ secret_key: "你的SK"
 - 已加入 `.gitignore`，绝不提交
 
 ---
-
-## 四、运行
 
 ```bash
 # 在项目根目录下
@@ -202,7 +165,62 @@ https://documentation-samples.obs.cn-north-4.myhuaweicloud.com/solution-as-code-
 
 ---
 
-## 七、区域映射表
+## 功能特性
+
+- ✅ 文件选择 + 拖拽上传（**支持多文件**）
+- ✅ **自定义目录**：首页可自由输入目录名，默认自动填充文件名
+- ✅ 区域选择，自动映射 Bucket / Region / Endpoint
+- ✅ 自动生成 Object Key：`{root}/{module}/{自定义目录}/{filename}`
+- ✅ 调用华为云 OBS 官方 SDK 上传（不自行实现签名）
+- ✅ 上传后自动设置对象 ACL 为公共读
+- ✅ 自动生成公网 URL，一键复制 / 打开
+- ✅ 重复对象提示覆盖
+- ✅ 完整日志区，敏感信息脱敏
+- ✅ 友好错误提示（认证失败 / Bucket 不存在 / 权限不足 / 网络异常 / ACL 失败）
+- ✅ 可打包为 Windows `.exe`
+- ✅ **设置面板**：凭证 / 目标路径前缀 / 区域映射表 全部前端可配置，持久化到 `user_settings.json`，默认值即当前商定值
+
+---
+
+## 项目结构
+
+```
+obs-solution-uploader/
+├── app/
+│   ├── main.py                 # 入口
+│   ├── config/
+│   │   ├── regions.py          # 区域 → Bucket/Endpoint 映射
+│   │   └── settings.py         # 固定目录、ACL、环境变量名
+│   ├── services/
+│   │   ├── obs_service.py      # OBS SDK 封装
+│   │   ├── upload_service.py   # 上传流程编排
+│   │   └── url_service.py      # 公网 URL 生成
+│   ├── ui/
+│   │   ├── main_window.py      # 主窗口
+│   │   ├── upload_widget.py    # 上传表单（含拖拽）
+│   │   ├── result_widget.py    # 结果展示
+│   │   ├── settings_dialog.py  # 设置对话框（凭证/路径/区域）
+│   │   └── worker.py           # 上传工作线程
+│   └── utils/
+│       ├── auth.py             # 凭证加载
+│       ├── file_utils.py       # 文件名解析 / Object Key 生成
+│       └── logger.py           # 安全日志
+├── tests/                      # 单元测试
+├── requirements.txt
+├── .env.example
+├── config.yaml.example
+├── .gitignore
+├── build.spec                  # PyInstaller 打包配置
+└── README.md
+```
+
+UI、业务逻辑、OBS SDK、区域配置、工具函数相互解耦。
+
+> `app/config/config_manager.py` 是配置中枢：凭证、路径前缀、区域映射全部由它统一加载/保存，默认值即代码内商定值。
+
+---
+
+## 区域映射表（示例，用作定义多桶管理）
 
 | 区域 | Region Code | Bucket | Endpoint |
 | --- | --- | --- | --- |
@@ -228,48 +246,3 @@ https://documentation-samples.obs.cn-north-4.myhuaweicloud.com/solution-as-code-
 新增区域只需在 `app/config/regions.py` 的 `REGIONS` 中追加一项。
 
 ---
-
-## 八、测试
-
-```bash
-python -m unittest discover tests
-```
-
-覆盖：
-- 区域映射正确性（北京四 / 广州 / 上海等）
-- Object Key 生成规则
-- 公网 URL 生成与 URL Encoding
-- 文件名解析
-
----
-
-## 九、打包为 Windows EXE
-
-```bash
-pip install pyinstaller
-pyinstaller build.spec
-```
-
-产物：`dist/OBS-Solution-Uploader.exe`，双击即可运行。
-
-> 打包后凭证仍通过环境变量或 `config.yaml`（与 exe 同目录）提供。
-
----
-
-## 十、安全说明
-
-- Access Key / Secret Key 绝不写入源码
-- `.env`、`config.yaml` 已加入 `.gitignore`
-- UI 中 Secret Key 以密码形式显示
-- 日志对疑似密钥内容脱敏
-- 错误信息不泄露完整凭证
-- 使用华为云官方 SDK 完成签名，不自行实现
-
----
-
-## 十一、扩展指南
-
-- **新增区域**：编辑 `app/config/regions.py`
-- **支持更多文件类型**：编辑 `app/config/settings.py` 的 `SUPPORTED_EXTENSIONS`
-- **修改固定目录**：编辑 `app/config/settings.py` 的 `ROOT_PREFIX` / `MODULE_PREFIX`
-- **更换 ACL 策略**：编辑 `app/config/settings.py` 的 `ACL_PUBLIC_READ`
