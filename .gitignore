@@ -1,0 +1,29 @@
+# 凭证与配置（绝不提交）
+.env
+config.yaml
+user_settings.json
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# PyInstaller
+*.spec.bak
+
+# 测试临时文件
+tests/*.tf
+tests/*.yaml
+
+# IDE
+.idea/
+.vscode/
+*.swp

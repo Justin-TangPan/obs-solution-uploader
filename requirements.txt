@@ -1,0 +1,8 @@
+# GUI 框架
+PySide6>=6.6.0
+
+# 华为云 OBS 官方 SDK
+esdk-obs-python>=3.1.5
+
+# 配置文件解析
+PyYAML>=6.0
