@@ -1,4 +1,4 @@
-<img width="722" height="1024" alt="image" src="https://github.com/user-attachments/assets/e5ba5b0b-967e-423c-9fec-7427d1e8a09c" /># OBS Solution Uploader — OBS 一键上传工具
+# OBS Solution Uploader — OBS 一键上传工具
 
 将 Terraform / Solution as Code 文件一键上传到华为云 OBS，自动设置公共读权限并返回公网访问 URL。提高上传效率
 
@@ -6,75 +6,23 @@
 
 ---
 ## 开始使用
-### 1.源码
-```bash
-pip install -r requirements.txt
-```
-### 2. 配置 OBS 凭证
+### 1.下载.exe
+https://github.com/Justin-TangPan/obs-solution-uploader/releases/tag/v1.0.0
 
-支持三种方式（优先级：界面输入 > 环境变量 > config.yaml）：
+### 2.双击软件
+选择“设置”
+填入你的华为云AK\SK
+选择“保存”
 
-### 3. 运行程序
-```bash
-# 在项目根目录下
-python -m app.main
-```
+### 3.选择文件
 
-或：
+### 4.选择region
 
-```bash
-python app/main.py
-```
-
-## 环境准备
-
-### 1. 安装依赖
-
-```bash
-pip install -r requirements.txt
-```
-
-核心依赖：
-- `PySide6` — GUI 框架
-- `esdk-obs-python` — 华为云 OBS 官方 Python SDK
-- `PyYAML` — 配置文件解析
-
-### 2. 配置 OBS 凭证
-
-支持三种方式（优先级：界面输入 > 环境变量 > config.yaml）：
-
-#### 方式 A：环境变量（推荐）
-
-将 `.env.example` 复制为 `.env` 并填入真实值：
-
-```bash
-HUAWEICLOUD_ACCESS_KEY=AKxxxxxxxx
-HUAWEICLOUD_SECRET_KEY=SKxxxxxxxx
-```
-
-Windows PowerShell 设置环境变量：
-
-```powershell
-$env:HUAWEICLOUD_ACCESS_KEY = "你的AK"
-$env:HUAWEICLOUD_SECRET_KEY = "你的SK"
-```
-
-#### 方式 B：config.yaml
-
-将 `config.yaml.example` 复制为 `config.yaml` 并填入：
-
-```yaml
-access_key: "你的AK"
-secret_key: "你的SK"
-```
-
-> `config.yaml` 与 `.env` 已在 `.gitignore` 中忽略，**切勿提交到 Git**。
-
-#### 方式 C：界面输入
-
-启动后在「华为云凭证」区域直接输入 AK / SK（Secret Key 以密码形式显示，关闭程序后不保留）。
+### 5.点击上传
+<img width="400" height="500" alt="image" src="https://github.com/user-attachments/assets/815d7259-9525-4674-a727-3cfb95840491" />
 
 ---
+
 
 ## 设置面板（前端可配置）
 
