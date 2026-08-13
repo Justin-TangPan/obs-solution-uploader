@@ -27,3 +27,8 @@ tests/*.yaml
 .idea/
 .vscode/
 *.swp
+
+# 临时文件
+release_id.txt
+upload_url.txt
+tmp/
