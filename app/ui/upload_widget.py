@@ -136,7 +136,8 @@ class MultiFileDropArea(QFrame):
     def _pick_files(self) -> None:
         from PySide6.QtWidgets import QFileDialog
         paths, _ = QFileDialog.getOpenFileNames(
-            self, "选择文件", "", "Terraform / All Files (*.tf *.yaml *.yml *.json *.zip *.md);;All Files (*.*)"
+            self, "选择文件", "",
+            "All Files (*.*)"
         )
         if paths:
             self._add_files(paths)
