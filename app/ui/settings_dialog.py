@@ -8,8 +8,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox, QDialog, QFormLayout, QGroupBox, QHBoxLayout, QHeaderView,
-    QLabel, QLineEdit, QMessageBox, QPushButton, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget,
+    QLabel, QLineEdit, QMessageBox, QPushButton, QSizePolicy, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
 from app.config.config_manager import config_manager
@@ -23,8 +23,10 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("设置")
         self.resize(720, 620)
+        self.setMinimumSize(560, 480)
         self._init_ui()
         self._load_from_config()
+        self._auto_fit_table()
 
     # ------------------------------------------------------------------
     def _init_ui(self) -> None:
@@ -85,7 +87,9 @@ class SettingsDialog(QDialog):
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
-        self._table.setMinimumHeight(220)
+        header.setStretchLastSection(True)
+        self._table.setMinimumHeight(180)
+        self._table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         region_layout.addWidget(self._table)
 
         btn_row = QHBoxLayout()
@@ -158,6 +162,15 @@ class SettingsDialog(QDialog):
                 cfg.get("endpoint", ""),
             )
 
+    def _auto_fit_table(self) -> None:
+        """根据内容自动调整列宽，并自适应行高。"""
+        self._table.resizeColumnsToContents()
+        # 给前 3 列留一点余量，最后一列 Stretch 自动撑满
+        for col in range(3):
+            w = self._table.columnWidth(col)
+            self._table.setColumnWidth(col, w + 16)
+        self._table.resizeRowsToContents()
+
     def _add_row_data(self, name: str, region: str, bucket: str,
                       endpoint: str) -> None:
         row = self._table.rowCount()
@@ -169,6 +182,7 @@ class SettingsDialog(QDialog):
 
     def _add_row(self) -> None:
         self._add_row_data("", "", "", "")
+        self._auto_fit_table()
         self._table.editItem(self._table.item(self._table.rowCount() - 1, 0))
 
     def _del_row(self) -> None:
@@ -176,6 +190,7 @@ class SettingsDialog(QDialog):
                       reverse=True)
         for r in rows:
             self._table.removeRow(r)
+        self._auto_fit_table()
 
     def _reset_regions(self) -> None:
         """恢复区域表为代码内默认值。"""
@@ -184,6 +199,7 @@ class SettingsDialog(QDialog):
             for name, rc in DEFAULT_REGIONS.items()
         }
         self._fill_table(default)
+        self._auto_fit_table()
 
     # ------------------------------------------------------------------
     def _collect_regions(self) -> dict:

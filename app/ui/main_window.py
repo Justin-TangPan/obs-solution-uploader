@@ -34,7 +34,8 @@ class LogPanel(QWidget):
 
         self._text = QTextEdit()
         self._text.setReadOnly(True)
-        self._text.setMinimumHeight(110)
+        self._text.setMinimumHeight(80)
+        self._text.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout.addWidget(self._text)
 
         logger.add_handler(self._on_log)
@@ -103,6 +104,7 @@ class MainWindow(QMainWindow):
         splitter.addWidget(self._log_panel)
         splitter.setStretchFactor(0, 4)
         splitter.setStretchFactor(1, 1)
+        splitter.setSizes([560, 180])
 
         outer.addWidget(splitter, stretch=1)
 

@@ -43,8 +43,8 @@ class MultiFileDropArea(QFrame):
         # 已选文件列表
         self._file_list = QListWidget()
         self._file_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self._file_list.setMinimumHeight(60)
-        self._file_list.setMaximumHeight(150)
+        self._file_list.setMinimumHeight(50)
+        self._file_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._file_list.setVisible(False)
         layout.addWidget(self._file_list)
 
@@ -217,7 +217,8 @@ class UploadWidget(QWidget):
         gl.addLayout(exist_row)
 
         self._existing_dirs_list = QListWidget()
-        self._existing_dirs_list.setMaximumHeight(84)
+        self._existing_dirs_list.setMinimumHeight(60)
+        self._existing_dirs_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding)
         self._existing_dirs_list.setToolTip("点击某项可填入上方目录输入框")
         self._existing_dirs_list.itemClicked.connect(self._on_pick_existing_dir)
         gl.addWidget(self._existing_dirs_list)
