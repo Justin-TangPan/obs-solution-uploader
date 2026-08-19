@@ -35,9 +35,9 @@ class MultiFileDropArea(QFrame):
         layout.setContentsMargins(4, 4, 4, 4)
 
         # 拖拽/点击提示
-        self._hint_label = QLabel("点击选择文件，或将文件拖拽到此处（支持多文件）")
+        self._hint_label = QLabel("📂  点击选择文件，或将文件拖拽到此处（支持多文件）")
         self._hint_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._hint_label.setStyleSheet("color:#888;")
+        self._hint_label.setStyleSheet("color:#9ca3af; font-size:13px; padding:8px;")
         layout.addWidget(self._hint_label)
 
         # 已选文件列表
@@ -50,16 +50,23 @@ class MultiFileDropArea(QFrame):
 
         # 操作按钮行
         self._action_row = QHBoxLayout()
+        self._action_row.setSpacing(6)
         self._select_btn = QPushButton("选择文件")
+        self._select_btn.setObjectName("GhostBtn")
+        self._select_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._select_btn.clicked.connect(self._pick_files)
         self._action_row.addWidget(self._select_btn)
 
         self._clear_btn = QPushButton("清空")
+        self._clear_btn.setObjectName("GhostBtn")
+        self._clear_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._clear_btn.setVisible(False)
         self._clear_btn.clicked.connect(self._clear_all)
         self._action_row.addWidget(self._clear_btn)
 
         self._remove_btn = QPushButton("移除选中")
+        self._remove_btn.setObjectName("GhostBtn")
+        self._remove_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._remove_btn.setVisible(False)
         self._remove_btn.clicked.connect(self._remove_selected)
         self._action_row.addWidget(self._remove_btn)
@@ -161,96 +168,120 @@ class UploadWidget(QWidget):
 
     def _init_ui(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
 
-        group = QGroupBox("上传配置")
+        group = QGroupBox("📤 上传配置")
         gl = QVBoxLayout(group)
+        gl.setSpacing(7)
+
+        def section(text: str) -> QLabel:
+            lbl = QLabel(text)
+            lbl.setObjectName("SectionLabel")
+            return lbl
 
         # ---- 文件（多文件） ----
-        gl.addWidget(QLabel("文件（支持多选）"))
+        gl.addWidget(section("文件（支持多选 / 拖拽）"))
         self._file_area = MultiFileDropArea()
         self._file_area.files_changed.connect(self._on_files_changed)
         gl.addWidget(self._file_area)
 
         # ---- 目录（自定义） ----
         dir_row = QHBoxLayout()
-        dir_label = QLabel("目录")
-        dir_label.setToolTip("自定义存储目录，默认使用文件名（去掉扩展名）")
-        dir_row.addWidget(dir_label)
+        dir_row.setSpacing(6)
+        dir_row.addWidget(section("目录"))
         self._dir_edit = QLineEdit()
         self._dir_edit.setPlaceholderText("默认：文件名（不含扩展名）")
         self._dir_edit.textChanged.connect(self._update_preview)
         dir_row.addWidget(self._dir_edit, stretch=1)
         self._reset_dir_btn = QPushButton("↺ 还原")
+        self._reset_dir_btn.setObjectName("GhostBtn")
         self._reset_dir_btn.setToolTip("还原为文件名（去掉扩展名）")
+        self._reset_dir_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._reset_dir_btn.clicked.connect(self._reset_dir)
         dir_row.addWidget(self._reset_dir_btn)
         gl.addLayout(dir_row)
 
         # ---- 已有目录（从 OBS 列举） ----
         exist_row = QHBoxLayout()
-        exist_label = QLabel("已有目录")
-        exist_label.setStyleSheet("color:#555;")
+        exist_row.setSpacing(6)
+        exist_label = section("已有目录")
         exist_row.addWidget(exist_label)
         self._refresh_dirs_btn = QPushButton("🔄 刷新")
+        self._refresh_dirs_btn.setObjectName("GhostBtn")
         self._refresh_dirs_btn.setToolTip("从 OBS 桶列举该路径下已有的子目录")
+        self._refresh_dirs_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._refresh_dirs_btn.clicked.connect(self._request_list_dirs)
         exist_row.addWidget(self._refresh_dirs_btn)
         exist_row.addStretch()
         gl.addLayout(exist_row)
 
         self._existing_dirs_list = QListWidget()
-        self._existing_dirs_list.setMaximumHeight(90)
+        self._existing_dirs_list.setMaximumHeight(84)
         self._existing_dirs_list.setToolTip("点击某项可填入上方目录输入框")
         self._existing_dirs_list.itemClicked.connect(self._on_pick_existing_dir)
-        self._existing_dirs_list.setStyleSheet("font-size:12px;")
         gl.addWidget(self._existing_dirs_list)
 
         # ---- 区域 ----
-        gl.addWidget(QLabel("区域"))
+        gl.addWidget(section("区域"))
         self._region_combo = QComboBox()
         for name in list_region_names():
             self._region_combo.addItem(name)
         self._region_combo.currentTextChanged.connect(self._on_region_changed)
         gl.addWidget(self._region_combo)
 
-        # 目标 Bucket
-        gl.addWidget(QLabel("目标 Bucket"))
-        self._bucket_label = QLabel("—")
-        self._bucket_label.setStyleSheet("color:#555; padding:2px 4px;")
-        gl.addWidget(self._bucket_label)
+        # 目标信息（Bucket / Region / Endpoint 卡片）
+        info_box = QFrame()
+        info_box.setStyleSheet("""
+            QFrame { background-color: #f9fafb; border: 1px solid #e5e7eb;
+                     border-radius: 8px; }
+        """)
+        info_layout = QVBoxLayout(info_box)
+        info_layout.setContentsMargins(10, 8, 10, 8)
+        info_layout.setSpacing(4)
 
-        # 区域代码 / Endpoint
+        bucket_row = QHBoxLayout()
+        bucket_row.addWidget(self._mk_kv("Bucket"))
+        self._bucket_label = QLabel("—")
+        self._bucket_label.setStyleSheet("color:#2563eb; font-weight:600;")
+        bucket_row.addWidget(self._bucket_label, stretch=1)
+        info_layout.addLayout(bucket_row)
+
         meta_row = QHBoxLayout()
-        meta_row.addWidget(QLabel("Region："))
+        meta_row.addWidget(self._mk_kv("Region"))
         self._region_code_label = QLabel("—")
-        self._region_code_label.setStyleSheet("color:#555;")
+        self._region_code_label.setStyleSheet("color:#374151;")
         meta_row.addWidget(self._region_code_label, stretch=1)
-        meta_row.addWidget(QLabel("Endpoint："))
+        meta_row.addWidget(self._mk_kv("Endpoint"))
         self._endpoint_label = QLabel("—")
-        self._endpoint_label.setStyleSheet("color:#555;")
+        self._endpoint_label.setStyleSheet("color:#374151;")
         meta_row.addWidget(self._endpoint_label, stretch=2)
-        gl.addLayout(meta_row)
+        info_layout.addLayout(meta_row)
+        gl.addWidget(info_box)
 
         # ---- 目标路径预览 ----
-        gl.addWidget(QLabel("目标路径（第一文件示例）"))
+        gl.addWidget(section("目标路径（示例）"))
         self._path_label = QLabel("—")
         self._path_label.setStyleSheet(
-            "color:#555; padding:2px 4px; word-wrap:break-word; font-size:12px;"
+            "color:#6b7280; padding:6px 10px; background-color:#f9fafb;"
+            "border:1px solid #e5e7eb; border-radius:8px; font-size:12px;"
         )
         self._path_label.setWordWrap(True)
         gl.addWidget(self._path_label)
 
         # ---- 凭证提示 ----
         cred_hint = QLabel("💡 华为云凭证请在右上角「⚙️ 设置」中配置")
-        cred_hint.setStyleSheet("color:#888; font-size:11px; padding:2px 0;")
+        cred_hint.setStyleSheet("color:#9ca3af; font-size:11px; padding:2px 0;")
         gl.addWidget(cred_hint)
 
         # ---- 上传按钮 ----
         btn_row = QHBoxLayout()
+        btn_row.setContentsMargins(0, 4, 0, 0)
         btn_row.addStretch()
-        self._upload_btn = QPushButton("🚀 上传到 OBS")
-        self._upload_btn.setMinimumHeight(40)
+        self._upload_btn = QPushButton("🚀  上传到 OBS")
+        self._upload_btn.setObjectName("PrimaryBtn")
+        self._upload_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._upload_btn.setMinimumHeight(42)
         self._upload_btn.clicked.connect(self._on_upload_clicked)
         btn_row.addWidget(self._upload_btn)
         btn_row.addStretch()
@@ -261,6 +292,12 @@ class UploadWidget(QWidget):
 
         # 初始化预览
         self._on_region_changed(self._region_combo.currentText())
+
+    @staticmethod
+    def _mk_kv(text: str) -> QLabel:
+        lbl = QLabel(text)
+        lbl.setStyleSheet("color:#9ca3af; font-size:11px; font-weight:600;")
+        return lbl
 
     # ------------------------------------------------------------------
     # 事件

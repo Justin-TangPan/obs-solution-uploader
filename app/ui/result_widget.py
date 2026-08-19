@@ -26,24 +26,31 @@ class ResultWidget(QFrame):
 
     def _init_ui(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
 
-        self._group = QGroupBox("上传结果")
+        self._group = QGroupBox("✅ 上传结果")
         group_layout = QVBoxLayout(self._group)
+        group_layout.setSpacing(7)
 
         # 步骤状态列表（多行）
         self._steps_text = QTextEdit()
+        self._steps_text.setObjectName("StepsText")
         self._steps_text.setReadOnly(True)
-        self._steps_text.setMaximumHeight(160)
+        self._steps_text.setMaximumHeight(150)
         self._steps_text.setPlaceholderText("尚未上传")
         group_layout.addWidget(self._steps_text)
 
         # 公网 URL
         url_label = QLabel("公网访问地址（最后一个文件）")
+        url_label.setObjectName("SectionLabel")
         group_layout.addWidget(url_label)
 
         url_row = QHBoxLayout()
+        url_row.setSpacing(6)
         self._url_combo = QPushButton("▼ 查看全部 URL")
+        self._url_combo.setObjectName("GhostBtn")
+        self._url_combo.setCursor(Qt.CursorShape.PointingHandCursor)
         self._url_combo.setVisible(False)
         self._url_combo.clicked.connect(self._show_all_urls)
         url_row.addWidget(self._url_combo)
@@ -53,12 +60,16 @@ class ResultWidget(QFrame):
         self._url_edit.setPlaceholderText("上传成功后在此显示公网 URL")
         url_row.addWidget(self._url_edit, stretch=1)
 
-        self._copy_btn = QPushButton("复制链接")
+        self._copy_btn = QPushButton("📋 复制链接")
+        self._copy_btn.setObjectName("GhostBtn")
+        self._copy_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._copy_btn.setEnabled(False)
         self._copy_btn.clicked.connect(self._copy_url)
         url_row.addWidget(self._copy_btn)
 
-        self._open_btn = QPushButton("打开链接")
+        self._open_btn = QPushButton("🔗 打开链接")
+        self._open_btn.setObjectName("GhostBtn")
+        self._open_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._open_btn.setEnabled(False)
         self._open_btn.clicked.connect(self._open_url)
         url_row.addWidget(self._open_btn)

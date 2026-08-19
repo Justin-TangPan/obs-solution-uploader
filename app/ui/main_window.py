@@ -4,9 +4,11 @@
 """
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
-    QDialog, QHBoxLayout, QLabel, QMainWindow, QMessageBox, QProgressBar,
-    QPushButton, QSizePolicy, QTextEdit, QVBoxLayout, QWidget, QSplitter,
+    QDialog, QFrame, QHBoxLayout, QLabel, QMainWindow, QMessageBox,
+    QProgressBar, QPushButton, QSizePolicy, QTextEdit, QVBoxLayout,
+    QWidget, QSplitter,
 )
 
 from app.services.upload_service import UploadStatus
@@ -24,21 +26,25 @@ class LogPanel(QWidget):
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        header = QLabel("日志")
+        layout.setSpacing(6)
+
+        header = QLabel("📋 运行日志")
+        header.setStyleSheet("font-size:13px; font-weight:600; color:#6b7280; padding-left:2px;")
         layout.addWidget(header)
+
         self._text = QTextEdit()
         self._text.setReadOnly(True)
-        self._text.setMinimumHeight(120)
+        self._text.setMinimumHeight(110)
         layout.addWidget(self._text)
 
         logger.add_handler(self._on_log)
 
     def _on_log(self, level: str, line: str) -> None:
         color = {
-            "ERROR": "#c62828",
-            "WARN": "#ef6c00",
-            "STEP": "#1565c0",
-        }.get(level, "#444")
+            "ERROR": "#dc2626",
+            "WARN": "#d97706",
+            "STEP": "#2563eb",
+        }.get(level, "#6b7280")
         self._text.append(f'<span style="color:{color};">{line}</span>')
 
     def append(self, text: str) -> None:
@@ -57,30 +63,22 @@ class MainWindow(QMainWindow):
 
     def _init_ui(self) -> None:
         self.setWindowTitle("OBS Solution Uploader — 解决方案代码一键上传工具")
-        self.resize(720, 780)
+        self.resize(740, 820)
+        self.setMinimumSize(680, 700)
 
         central = QWidget()
+        central.setObjectName("CentralWidget")
         outer = QVBoxLayout(central)
+        outer.setContentsMargins(20, 18, 20, 18)
+        outer.setSpacing(12)
 
-        # 标题
-        title = QLabel("OBS Solution Uploader")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("font-size:20px; font-weight:bold; padding:8px;")
-        outer.addWidget(title)
-        subtitle = QLabel("解决方案代码一键上传工具")
-        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        subtitle.setStyleSheet("color:#666; padding-bottom:8px;")
-        outer.addWidget(subtitle)
+        # ---- 顶部标题栏 ----
+        header = self._build_header()
+        outer.addWidget(header)
 
-        # 设置按钮
-        settings_row = QHBoxLayout()
-        settings_row.addStretch()
-        self._settings_btn = QPushButton("⚙️ 设置")
-        self._settings_btn.clicked.connect(self._open_settings)
-        settings_row.addWidget(self._settings_btn)
-        outer.addLayout(settings_row)
-
+        # ---- 主体（可拖拽分隔） ----
         splitter = QSplitter(Qt.Orientation.Vertical)
+        splitter.setHandleWidth(6)
 
         self._upload_widget = UploadWidget()
         self._result_widget = ResultWidget()
@@ -89,6 +87,7 @@ class MainWindow(QMainWindow):
         top = QWidget()
         tl = QVBoxLayout(top)
         tl.setContentsMargins(0, 0, 0, 0)
+        tl.setSpacing(10)
         tl.addWidget(self._upload_widget)
         tl.addWidget(self._result_widget)
 
@@ -97,11 +96,12 @@ class MainWindow(QMainWindow):
         self._progress_bar.setRange(0, 100)
         self._progress_bar.setValue(0)
         self._progress_bar.setVisible(False)
+        self._progress_bar.setFixedHeight(14)
         tl.addWidget(self._progress_bar)
 
         splitter.addWidget(top)
         splitter.addWidget(self._log_panel)
-        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(0, 4)
         splitter.setStretchFactor(1, 1)
 
         outer.addWidget(splitter, stretch=1)
@@ -112,6 +112,53 @@ class MainWindow(QMainWindow):
         self._upload_widget.upload_requested.connect(self._on_upload_requested)
         self._upload_widget.check_exists_requested.connect(self._on_check_exists)
         self._upload_widget.list_dirs_requested.connect(self._on_list_dirs)
+
+    # ------------------------------------------------------------------
+    def _build_header(self) -> QWidget:
+        """构建顶部标题栏。"""
+        bar = QFrame()
+        bar.setObjectName("HeaderBar")
+        bar.setStyleSheet("""
+            QFrame#HeaderBar {
+                background-color: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+            }
+        """)
+        layout = QHBoxLayout(bar)
+        layout.setContentsMargins(18, 14, 18, 14)
+        layout.setSpacing(12)
+
+        # 左侧：图标 + 标题
+        left = QVBoxLayout()
+        left.setSpacing(2)
+
+        title_row = QHBoxLayout()
+        title_row.setSpacing(8)
+        icon = QLabel("☁️")
+        icon.setStyleSheet("font-size: 24px;")
+        title_row.addWidget(icon)
+
+        title = QLabel("OBS Solution Uploader")
+        title.setObjectName("AppTitle")
+        title_row.addWidget(title)
+        title_row.addStretch()
+        left.addLayout(title_row)
+
+        subtitle = QLabel("解决方案代码一键上传工具  ·  选择文件 → 选区域 → 一键上传")
+        subtitle.setObjectName("AppSubtitle")
+        left.addWidget(subtitle)
+
+        layout.addLayout(left, stretch=1)
+
+        # 右侧：设置按钮
+        self._settings_btn = QPushButton("⚙️  设置")
+        self._settings_btn.setObjectName("SettingsBtn")
+        self._settings_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._settings_btn.clicked.connect(self._open_settings)
+        layout.addWidget(self._settings_btn, alignment=Qt.AlignmentFlag.AlignTop)
+
+        return bar
 
     # ------------------------------------------------------------------
     def _open_settings(self) -> None:
@@ -177,7 +224,7 @@ class MainWindow(QMainWindow):
         self._result_widget.reset()
         self._upload_widget.set_uploading(True)
         self._log_panel.append(
-            f"<b>开始上传 {len(file_paths)} 个文件到 {region_name}...</b>"
+            f'<b style="color:#2563eb;">开始上传 {len(file_paths)} 个文件到 {region_name}...</b>'
         )
 
         self._worker = UploadWorker(

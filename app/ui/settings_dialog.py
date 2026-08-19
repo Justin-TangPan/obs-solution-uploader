@@ -29,10 +29,13 @@ class SettingsDialog(QDialog):
     # ------------------------------------------------------------------
     def _init_ui(self) -> None:
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 16, 18, 16)
+        layout.setSpacing(12)
 
         # ---- 凭证 ----
-        cred_group = QGroupBox("华为云凭证（保存到本地 user_settings.json，不进 Git）")
+        cred_group = QGroupBox("🔐 华为云凭证（保存到本地 user_settings.json，不进 Git）")
         cred_form = QFormLayout(cred_group)
+        cred_form.setSpacing(8)
         self._ak_edit = QLineEdit()
         self._ak_edit.setPlaceholderText("Access Key ID")
         cred_form.addRow("Access Key", self._ak_edit)
@@ -48,14 +51,15 @@ class SettingsDialog(QDialog):
         cred_form.addRow("Security Token", self._token_edit)
 
         hint = QLabel("提示：留空则回退到环境变量 / config.yaml。Secret Key 以密码形式显示。")
-        hint.setStyleSheet("color:#888; font-size:11px;")
+        hint.setStyleSheet("color:#9ca3af; font-size:11px;")
         hint.setWordWrap(True)
         cred_form.addRow(hint)
         layout.addWidget(cred_group)
 
         # ---- 目标路径前缀 ----
-        path_group = QGroupBox("目标路径前缀（Object Key 的固定根目录）")
+        path_group = QGroupBox("📁 目标路径前缀（Object Key 的固定根目录）")
         path_form = QFormLayout(path_group)
+        path_form.setSpacing(8)
         self._root_edit = QLineEdit()
         self._root_edit.setPlaceholderText("solution-as-code-publicbucket")
         path_form.addRow("根目录 (root_prefix)", self._root_edit)
@@ -65,13 +69,14 @@ class SettingsDialog(QDialog):
         path_form.addRow("模块目录 (module_prefix)", self._module_edit)
 
         path_hint = QLabel("最终路径：{root}/{module}/{solution-name}/{filename}")
-        path_hint.setStyleSheet("color:#888; font-size:11px;")
+        path_hint.setStyleSheet("color:#9ca3af; font-size:11px;")
         path_form.addRow(path_hint)
         layout.addWidget(path_group)
 
         # ---- 区域映射表 ----
-        region_group = QGroupBox("区域映射表（显示名称 / Region Code / Bucket / Endpoint）")
+        region_group = QGroupBox("🌐 区域映射表（显示名称 / Region Code / Bucket / Endpoint）")
         region_layout = QVBoxLayout(region_group)
+        region_layout.setSpacing(8)
 
         self._table = QTableWidget(0, 4)
         self._table.setHorizontalHeaderLabels(["显示名称", "Region Code", "Bucket", "Endpoint"])
@@ -84,15 +89,22 @@ class SettingsDialog(QDialog):
         region_layout.addWidget(self._table)
 
         btn_row = QHBoxLayout()
+        btn_row.setSpacing(6)
         self._add_btn = QPushButton("＋ 新增区域")
+        self._add_btn.setObjectName("GhostBtn")
+        self._add_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._add_btn.clicked.connect(self._add_row)
         btn_row.addWidget(self._add_btn)
 
         self._del_btn = QPushButton("－ 删除选中")
+        self._del_btn.setObjectName("GhostBtn")
+        self._del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._del_btn.clicked.connect(self._del_row)
         btn_row.addWidget(self._del_btn)
 
         self._reset_btn = QPushButton("↺ 恢复默认区域")
+        self._reset_btn.setObjectName("GhostBtn")
+        self._reset_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._reset_btn.clicked.connect(self._reset_regions)
         btn_row.addWidget(self._reset_btn)
 
@@ -102,13 +114,18 @@ class SettingsDialog(QDialog):
 
         # ---- 底部按钮 ----
         footer = QHBoxLayout()
+        footer.setContentsMargins(0, 4, 0, 0)
         footer.addStretch()
         cancel_btn = QPushButton("取消")
+        cancel_btn.setObjectName("GhostBtn")
+        cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         cancel_btn.clicked.connect(self.reject)
         footer.addWidget(cancel_btn)
 
-        save_btn = QPushButton("💾 保存")
-        save_btn.setMinimumHeight(34)
+        save_btn = QPushButton("💾  保存")
+        save_btn.setObjectName("PrimaryBtn")
+        save_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        save_btn.setMinimumHeight(38)
         save_btn.clicked.connect(self._on_save)
         footer.addWidget(save_btn)
         layout.addLayout(footer)
