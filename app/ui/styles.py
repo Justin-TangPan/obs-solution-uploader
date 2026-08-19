@@ -19,8 +19,8 @@ QGroupBox {
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-    margin-top: 14px;
-    padding: 14px 12px 10px 12px;
+    margin-top: 16px;
+    padding: 12px 14px 12px 14px;
     font-weight: 600;
     color: #374151;
 }
@@ -28,9 +28,9 @@ QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
     left: 14px;
-    padding: 2px 10px;
+    padding: 0 8px;
     background-color: #ffffff;
-    border-radius: 6px;
+    border-radius: 4px;
     font-size: 13px;
     color: #2563eb;
 }
@@ -54,7 +54,6 @@ QLabel#SectionLabel {
     font-size: 12px;
     font-weight: 600;
     color: #6b7280;
-    padding-top: 4px;
 }
 
 /* ===================== 输入框 ===================== */

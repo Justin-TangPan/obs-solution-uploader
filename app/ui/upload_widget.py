@@ -174,7 +174,6 @@ class UploadWidget(QWidget):
         group = QGroupBox("📤 上传配置")
         gl = QVBoxLayout(group)
         gl.setSpacing(8)
-        gl.setContentsMargins(14, 16, 14, 12)
 
         def section(text: str) -> QLabel:
             lbl = QLabel(text)
