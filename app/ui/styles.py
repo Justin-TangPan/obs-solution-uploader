@@ -195,6 +195,23 @@ QFrame#FileDropArea:hover {
     background-color: #eff6ff;
 }
 
+/* ===================== 信息卡片 ===================== */
+QFrame#InfoBox {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+/* ===================== 路径预览 ===================== */
+QLabel#PathPreview {
+    color: #6b7280;
+    padding: 6px 10px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
 /* ===================== 列表 ===================== */
 QListWidget {
     border: 1px solid #e5e7eb;

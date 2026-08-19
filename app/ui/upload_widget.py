@@ -8,7 +8,7 @@ import os
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
-    QComboBox, QFrame, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
+    QComboBox, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
     QListWidget, QListWidgetItem, QMessageBox, QPushButton, QSizePolicy,
     QVBoxLayout, QWidget, QAbstractItemView, QScrollArea,
 )
@@ -173,7 +173,8 @@ class UploadWidget(QWidget):
 
         group = QGroupBox("📤 上传配置")
         gl = QVBoxLayout(group)
-        gl.setSpacing(7)
+        gl.setSpacing(8)
+        gl.setContentsMargins(14, 16, 14, 12)
 
         def section(text: str) -> QLabel:
             lbl = QLabel(text)
@@ -187,9 +188,9 @@ class UploadWidget(QWidget):
         gl.addWidget(self._file_area)
 
         # ---- 目录（自定义） ----
+        gl.addWidget(section("目录"))
         dir_row = QHBoxLayout()
         dir_row.setSpacing(6)
-        dir_row.addWidget(section("目录"))
         self._dir_edit = QLineEdit()
         self._dir_edit.setPlaceholderText("默认：文件名（不含扩展名）")
         self._dir_edit.textChanged.connect(self._update_preview)
@@ -203,21 +204,20 @@ class UploadWidget(QWidget):
         gl.addLayout(dir_row)
 
         # ---- 已有目录（从 OBS 列举） ----
-        exist_row = QHBoxLayout()
-        exist_row.setSpacing(6)
-        exist_label = section("已有目录")
-        exist_row.addWidget(exist_label)
+        exist_header = QHBoxLayout()
+        exist_header.setSpacing(6)
+        exist_header.addWidget(section("已有目录"))
+        exist_header.addStretch()
         self._refresh_dirs_btn = QPushButton("🔄 刷新")
         self._refresh_dirs_btn.setObjectName("GhostBtn")
         self._refresh_dirs_btn.setToolTip("从 OBS 桶列举该路径下已有的子目录")
         self._refresh_dirs_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._refresh_dirs_btn.clicked.connect(self._request_list_dirs)
-        exist_row.addWidget(self._refresh_dirs_btn)
-        exist_row.addStretch()
-        gl.addLayout(exist_row)
+        exist_header.addWidget(self._refresh_dirs_btn)
+        gl.addLayout(exist_header)
 
         self._existing_dirs_list = QListWidget()
-        self._existing_dirs_list.setMinimumHeight(60)
+        self._existing_dirs_list.setMinimumHeight(56)
         self._existing_dirs_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding)
         self._existing_dirs_list.setToolTip("点击某项可填入上方目录输入框")
         self._existing_dirs_list.itemClicked.connect(self._on_pick_existing_dir)
@@ -233,40 +233,29 @@ class UploadWidget(QWidget):
 
         # 目标信息（Bucket / Region / Endpoint 卡片）
         info_box = QFrame()
-        info_box.setStyleSheet("""
-            QFrame { background-color: #f9fafb; border: 1px solid #e5e7eb;
-                     border-radius: 8px; }
-        """)
-        info_layout = QVBoxLayout(info_box)
-        info_layout.setContentsMargins(10, 8, 10, 8)
-        info_layout.setSpacing(4)
+        info_box.setObjectName("InfoBox")
+        info_layout = QGridLayout(info_box)
+        info_layout.setContentsMargins(12, 8, 12, 8)
+        info_layout.setHorizontalSpacing(16)
+        info_layout.setVerticalSpacing(4)
 
-        bucket_row = QHBoxLayout()
-        bucket_row.addWidget(self._mk_kv("Bucket"))
-        self._bucket_label = QLabel("—")
-        self._bucket_label.setStyleSheet("color:#2563eb; font-weight:600;")
-        bucket_row.addWidget(self._bucket_label, stretch=1)
-        info_layout.addLayout(bucket_row)
+        self._bucket_label = self._mk_info_value("—", "#2563eb")
+        self._region_code_label = self._mk_info_value("—", "#374151")
+        self._endpoint_label = self._mk_info_value("—", "#374151")
 
-        meta_row = QHBoxLayout()
-        meta_row.addWidget(self._mk_kv("Region"))
-        self._region_code_label = QLabel("—")
-        self._region_code_label.setStyleSheet("color:#374151;")
-        meta_row.addWidget(self._region_code_label, stretch=1)
-        meta_row.addWidget(self._mk_kv("Endpoint"))
-        self._endpoint_label = QLabel("—")
-        self._endpoint_label.setStyleSheet("color:#374151;")
-        meta_row.addWidget(self._endpoint_label, stretch=2)
-        info_layout.addLayout(meta_row)
+        info_layout.addWidget(self._mk_kv("Bucket"), 0, 0)
+        info_layout.addWidget(self._bucket_label, 0, 1)
+        info_layout.addWidget(self._mk_kv("Region"), 1, 0)
+        info_layout.addWidget(self._region_code_label, 1, 1)
+        info_layout.addWidget(self._mk_kv("Endpoint"), 2, 0)
+        info_layout.addWidget(self._endpoint_label, 2, 1)
+        info_layout.setColumnStretch(1, 1)
         gl.addWidget(info_box)
 
         # ---- 目标路径预览 ----
         gl.addWidget(section("目标路径（示例）"))
         self._path_label = QLabel("—")
-        self._path_label.setStyleSheet(
-            "color:#6b7280; padding:6px 10px; background-color:#f9fafb;"
-            "border:1px solid #e5e7eb; border-radius:8px; font-size:12px;"
-        )
+        self._path_label.setObjectName("PathPreview")
         self._path_label.setWordWrap(True)
         gl.addWidget(self._path_label)
 
@@ -277,7 +266,7 @@ class UploadWidget(QWidget):
 
         # ---- 上传按钮 ----
         btn_row = QHBoxLayout()
-        btn_row.setContentsMargins(0, 4, 0, 0)
+        btn_row.setContentsMargins(0, 6, 0, 0)
         btn_row.addStretch()
         self._upload_btn = QPushButton("🚀  上传到 OBS")
         self._upload_btn.setObjectName("PrimaryBtn")
@@ -298,6 +287,12 @@ class UploadWidget(QWidget):
     def _mk_kv(text: str) -> QLabel:
         lbl = QLabel(text)
         lbl.setStyleSheet("color:#9ca3af; font-size:11px; font-weight:600;")
+        return lbl
+
+    @staticmethod
+    def _mk_info_value(text: str, color: str) -> QLabel:
+        lbl = QLabel(text)
+        lbl.setStyleSheet(f"color:{color}; font-weight:600; font-size:12px;")
         return lbl
 
     # ------------------------------------------------------------------
