@@ -186,3 +186,66 @@ class ObsService:
     def verify_object(self, object_key: str) -> bool:
         """验证对象是否上传成功（存在即可）。"""
         return self.object_exists(object_key)
+
+    # ------------------------------------------------------------------
+    # 列举子目录
+    # ------------------------------------------------------------------
+    def list_subdirectories(self, prefix: str) -> list:
+        """
+        列举指定前缀下的子目录（一级）。
+
+        :param prefix: 如 "solution-as-code-publicbucket/solution-as-code-moudle/"
+        :return: 子目录名列表，如 ["deploying-cognee", "deploying-dify"]
+        :raises ObsError
+        """
+        # 确保前缀以 / 结尾，否则会把它本身当作 key 前缀
+        if prefix and not prefix.endswith("/"):
+            prefix = prefix + "/"
+
+        dirs = []
+        marker = None
+        try:
+            while True:
+                resp = self._client.listObjects(
+                    self._region.bucket,
+                    prefix=prefix,
+                    delimiter="/",
+                    marker=marker,
+                    max_keys=1000,
+                )
+                status = getattr(resp, "status", None)
+                if status not in (200,):
+                    raise _format_sdk_error(resp, "列举目录失败")
+
+                # commonPrefixs 即子目录
+                common = getattr(resp, "commonPrefixs", None) or []
+                for item in common:
+                    full = getattr(item, "prefix", "") or ""
+                    # 去掉前缀和结尾 /，得到子目录名
+                    name = full
+                    if name.startswith(prefix):
+                        name = name[len(prefix):]
+                    name = name.rstrip("/")
+                    if name:
+                        dirs.append(name)
+
+                # 处理分页
+                if getattr(resp, "is_truncated", False):
+                    marker = getattr(resp, "next_marker", None)
+                    if not marker:
+                        break
+                else:
+                    break
+        except ObsError:
+            raise
+        except Exception:
+            raise ObsError("列举目录失败，请检查网络连接和 OBS 权限。")
+
+        # 去重保序
+        seen = set()
+        unique = []
+        for d in dirs:
+            if d not in seen:
+                seen.add(d)
+                unique.append(d)
+        return unique

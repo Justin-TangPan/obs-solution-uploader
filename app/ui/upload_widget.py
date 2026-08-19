@@ -10,7 +10,7 @@ from PySide6.QtGui import QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
     QComboBox, QFrame, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
     QListWidget, QListWidgetItem, QMessageBox, QPushButton, QSizePolicy,
-    QVBoxLayout, QWidget, QAbstractItemView,
+    QVBoxLayout, QWidget, QAbstractItemView, QScrollArea,
 )
 
 from app.config.regions import get_region_config, list_region_names
@@ -151,6 +151,8 @@ class UploadWidget(QWidget):
     upload_requested = Signal(list, str, bool, str)
     # 请求检查对象是否存在：(file_paths: list, region_name, custom_dir)
     check_exists_requested = Signal(list, str, str)
+    # 请求列举已有目录：(region_name, prefix)
+    list_dirs_requested = Signal(str, str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -184,6 +186,25 @@ class UploadWidget(QWidget):
         self._reset_dir_btn.clicked.connect(self._reset_dir)
         dir_row.addWidget(self._reset_dir_btn)
         gl.addLayout(dir_row)
+
+        # ---- 已有目录（从 OBS 列举） ----
+        exist_row = QHBoxLayout()
+        exist_label = QLabel("已有目录")
+        exist_label.setStyleSheet("color:#555;")
+        exist_row.addWidget(exist_label)
+        self._refresh_dirs_btn = QPushButton("🔄 刷新")
+        self._refresh_dirs_btn.setToolTip("从 OBS 桶列举该路径下已有的子目录")
+        self._refresh_dirs_btn.clicked.connect(self._request_list_dirs)
+        exist_row.addWidget(self._refresh_dirs_btn)
+        exist_row.addStretch()
+        gl.addLayout(exist_row)
+
+        self._existing_dirs_list = QListWidget()
+        self._existing_dirs_list.setMaximumHeight(90)
+        self._existing_dirs_list.setToolTip("点击某项可填入上方目录输入框")
+        self._existing_dirs_list.itemClicked.connect(self._on_pick_existing_dir)
+        self._existing_dirs_list.setStyleSheet("font-size:12px;")
+        gl.addWidget(self._existing_dirs_list)
 
         # ---- 区域 ----
         gl.addWidget(QLabel("区域"))
@@ -269,6 +290,41 @@ class UploadWidget(QWidget):
                 pass
         else:
             self._dir_edit.clear()
+
+    # ------------------------------------------------------------------
+    # 已有目录列举
+    # ------------------------------------------------------------------
+    def _request_list_dirs(self) -> None:
+        """请求主窗口列举当前区域 + 路径前缀下的已有子目录。"""
+        region_name = self._region_combo.currentText()
+        prefix = object_key_prefix()
+        self._existing_dirs_list.clear()
+        self._existing_dirs_list.addItem("加载中…")
+        self._refresh_dirs_btn.setEnabled(False)
+        self.list_dirs_requested.emit(region_name, prefix)
+
+    def show_existing_dirs(self, dirs: list, error: str) -> None:
+        """主窗口列举完成后回调，展示结果。"""
+        self._refresh_dirs_btn.setEnabled(True)
+        self._existing_dirs_list.clear()
+        if error:
+            item = QListWidgetItem(f"⚠️ {error}")
+            item.setForeground(Qt.GlobalColor.red)
+            self._existing_dirs_list.addItem(item)
+            return
+        if not dirs:
+            item = QListWidgetItem("（暂无已有目录）")
+            item.setForeground(Qt.GlobalColor.gray)
+            self._existing_dirs_list.addItem(item)
+            return
+        for d in dirs:
+            self._existing_dirs_list.addItem(QListWidgetItem(d))
+
+    def _on_pick_existing_dir(self, item: QListWidgetItem) -> None:
+        """点击已有目录项，填入目录输入框。"""
+        text = item.text()
+        if text and not text.startswith("⚠️") and text != "（暂无已有目录）" and text != "加载中…":
+            self._dir_edit.setText(text)
 
     # ------------------------------------------------------------------
     def _update_preview(self) -> None:

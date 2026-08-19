@@ -81,3 +81,41 @@ class UploadWorker(QThread):
             self.all_done.emit([
                 UploadResult(status=UploadStatus.FAILED, message=str(e))
             ])
+
+
+class ListDirsWorker(QThread):
+    """后台列举 OBS 桶内已有子目录。"""
+
+    # (dirs: list, error: str)  二选一：成功时 error 为空
+    finished_dirs = Signal(list, str)
+
+    def __init__(self, region_name: str, prefix: str,
+                 config_path: str = None, parent=None):
+        super().__init__(parent)
+        self._region_name = region_name
+        self._prefix = prefix
+        self._config_path = config_path
+
+    def run(self) -> None:
+        try:
+            from app.config.config_manager import config_manager
+            from app.config.regions import get_region_config
+            from app.services.obs_service import ObsService, ObsError
+            from app.utils.auth import load_credentials
+
+            region = get_region_config(self._region_name)
+            if not region:
+                self.finished_dirs.emit([], f"未知区域：{self._region_name}")
+                return
+
+            user_cred = config_manager.get_credentials()
+            creds = load_credentials(self._config_path, None, user_cred)
+            if not creds or not creds.is_valid():
+                self.finished_dirs.emit([], "未找到华为云凭证，无法列举目录。")
+                return
+
+            obs = ObsService(creds, region)
+            dirs = obs.list_subdirectories(self._prefix)
+            self.finished_dirs.emit(dirs, "")
+        except Exception as e:
+            self.finished_dirs.emit([], str(e))

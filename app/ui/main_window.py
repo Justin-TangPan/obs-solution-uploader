@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 from app.services.upload_service import UploadStatus
 from app.ui.upload_widget import UploadWidget
 from app.ui.result_widget import ResultWidget
-from app.ui.worker import UploadWorker
+from app.ui.worker import UploadWorker, ListDirsWorker
 from app.ui.settings_dialog import SettingsDialog
 from app.utils.logger import logger
 
@@ -52,6 +52,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._config_path = config_path
         self._worker: UploadWorker = None
+        self._dirs_worker: ListDirsWorker = None
         self._init_ui()
 
     def _init_ui(self) -> None:
@@ -110,6 +111,7 @@ class MainWindow(QMainWindow):
         # 信号连接
         self._upload_widget.upload_requested.connect(self._on_upload_requested)
         self._upload_widget.check_exists_requested.connect(self._on_check_exists)
+        self._upload_widget.list_dirs_requested.connect(self._on_list_dirs)
 
     # ------------------------------------------------------------------
     def _open_settings(self) -> None:
@@ -117,6 +119,24 @@ class MainWindow(QMainWindow):
         if dlg.exec() == QDialog.DialogCode.Accepted:
             self._upload_widget.refresh_regions()
             logger.info("设置已更新，区域列表已刷新。")
+
+    # ------------------------------------------------------------------
+    def _on_list_dirs(self, region_name: str, prefix: str) -> None:
+        """后台列举 OBS 桶内已有子目录。"""
+        self._dirs_worker = ListDirsWorker(
+            region_name=region_name,
+            prefix=prefix,
+            config_path=self._config_path,
+        )
+        self._dirs_worker.finished_dirs.connect(self._on_list_dirs_done)
+        self._dirs_worker.start()
+
+    def _on_list_dirs_done(self, dirs: list, error: str) -> None:
+        self._upload_widget.show_existing_dirs(dirs, error)
+        if error:
+            logger.warn(f"列举目录失败：{error}")
+        else:
+            logger.info(f"列举到 {len(dirs)} 个已有目录。")
 
     # ------------------------------------------------------------------
     def _on_check_exists(self, file_paths: list, region_name: str,
